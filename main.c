@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "dataStructures.h"
+#include "history.h"
 
 int main(void){
   char input[21], input_2[21], input_3[15], choice[10], copy[21];
