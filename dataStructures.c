@@ -10,7 +10,7 @@
 
 int MAX_ARRAY_SIZE = 50;
 int MAX_NAME_SIZE = 20;
-int SIZE = 0;
+int SIZE = 10;
 
 int getData(char* key, struct Block * blocks){
   /*This function gets the position of the key
@@ -30,10 +30,11 @@ void setData(char * i_key, char * i_value, struct Block * blocks){
    *Input: string key, string value, Block pointer to array of Block
    */
   //Checks if structures is full
+  /*
   if(SIZE == MAX_ARRAY_SIZE){
     printf("\n\nData Structure is too full\n\n");
     return;
-  }
+  }*/
   //Gets position
   int a = getData(i_key, blocks);
   //If key does exist
@@ -115,4 +116,11 @@ void searchBlock(char * key, struct Block * blocks){
   printf("Key does exist");
   return;
 }
+
+void printEnv(struct Block * blocks){
+  for(int i = 0; i != SIZE ; i++){
+    printf("%s=%s\n", blocks[i].key, blocks[i].value);
+  }
+}
+
   

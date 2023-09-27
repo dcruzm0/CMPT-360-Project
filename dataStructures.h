@@ -40,5 +40,7 @@ void searchBlock(char * key, struct Block * blocks);
  *
  */
 
+void printEnv(struct Block * blocks);
+
 
   
