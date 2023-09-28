@@ -30,11 +30,11 @@ void setData(char * i_key, char * i_value, struct Block * blocks){
    *Input: string key, string value, Block pointer to array of Block
    */
   //Checks if structures is full
-  /*
+  
   if(SIZE == MAX_ARRAY_SIZE){
     printf("\n\nData Structure is too full\n\n");
     return;
-  }*/
+  }
   //Gets position
   int a = getData(i_key, blocks);
   //If key does exist
