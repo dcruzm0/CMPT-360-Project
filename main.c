@@ -17,15 +17,22 @@ int main(void){
   //This is the struct that holds the env variables
   struct Block en_var[10] = { {"CC", "gcc"}, {"EDITOR", "vim"}, {"HOME", "home"}, {"OLDPWD", "old"}, {"HOST", "host"}, {"PATH", "current"}, {"PWD", "homeDict"}, {"SHELL", "Project"}, {"HISTSIZE", "5"}, {"USER", "user"}};
 
+  //This is the struct that holds the history of user input. HISTSIZE is defined in the "history.h" file
+  struct Entry historyDb[HISTSIZE];
+
   //Loops until exit or quit is received
   while ((strcmp(choice, "exit") != 0) || (strcmp(choice, "quit") != 0)){
     printf("%s@%s:%s>> ", en_var[9].value, en_var[4].value, en_var[6].value);
     //Gets the users first choice
     scanf("%s", choice);
+    //stores the input to the history struct
+    add_history(choice, historyDb);
     
     if(strcmp(choice, "export") == 0){
            //Gets which variable the user wants to change and what value
       scanf("%s", input);
+      //adds this user input to the history database
+      add_history(input, historyDb);
       pos = 0;
       //Get the variable
       strcpy(copy, input);
@@ -56,7 +63,8 @@ int main(void){
       printEnv(en_var);
     }
     else if (strcmp(choice, "history") == 0){
-      
+      //prints the history of user inputs
+      print_history(historyDb);
     }
     else if(strcmp(choice, "exit") == 0){
       break;
