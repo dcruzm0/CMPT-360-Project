@@ -4,7 +4,6 @@
    This is a header file for the "history.c" file
 */
 
-#include "dataStructures.h"
 
 struct Entry {
   char command[50];

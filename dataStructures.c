@@ -3,16 +3,18 @@
  * Lab 1
  * This is the dataStructures.c file
   ---------------------------------------------------------------------------*/
-#include "dataStructures.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "dataStructures.h"
+#include "history.h"
 
 int MAX_ARRAY_SIZE = 50;
 int MAX_NAME_SIZE = 20;
 int SIZE = 10;
 
-int getData(char* key, struct Block * blocks){
+int getData(char *key, struct Block * blocks){
   /*This function gets the position of the key
    *Input: string key we are searching for, blocks array of Block
    */

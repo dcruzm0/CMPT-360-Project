@@ -8,6 +8,7 @@
 */
 
 #include "history.h"
+#include "dataStructures.h"
 
 int hSIZE = 0;
 
