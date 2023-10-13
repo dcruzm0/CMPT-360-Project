@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "dataStructures.h"
 #include "history.h"
 
@@ -71,6 +74,29 @@ int main(void){
     }
     else if(strcmp(choice, "quit") == 0){
       break;
+    }
+    else{
+      pid_t pid = fork();
+      if(pid>0){
+	wait(NULL);
+      }
+      else{
+	char vars[100];
+	char c;
+        int i = 1;
+	char *args[] = {choice, NULL};
+	/*
+	while (c = getchar()){
+	  if(c == '\n'|| == '\0'){
+	    i++;
+	  }
+	  else{
+	    args[i].append(x)
+	  }
+	  }*/
+        execlp(args[0], (char *)NULL);
+	exit(0);
+      }
     }
     
   }
