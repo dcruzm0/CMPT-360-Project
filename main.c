@@ -13,6 +13,41 @@
 #include "dataStructures.h"
 #include "history.h"
 
+void execProc(struct Entry *historyDb, char *choice){
+  char vars[50];
+  int i = 0;
+  int ch = getc(stdin);
+  char *args[2] = {choice, NULL};
+  //If the user inputs additional variables
+  if (ch != '\n'){
+    ungetc(ch, stdin);
+    char *buffer[50];
+    //Get the other variables
+    scanf("%[^\n]s", vars);
+    char *word = strtok(vars, " "); 
+    //Puts the variables in a temporary buffer
+    while(word!=NULL){
+      buffer[i] = word;
+      i++;
+      word = strtok(NULL, " ");
+    }
+    //Creates the array that will be passed
+    char *args[i+2];
+    args[0] = choice;
+    int a;
+    //Puts strings from old buffer to new array
+    for(a = 1; a <= i; a++){
+      args[a] = buffer[a-1];
+    }
+    args[a+1] = NULL;
+    execvp(args[0], args);
+  }
+  else{
+    printf("\nstdin is empty\n");
+    execvp(args[0], args);
+  }
+}
+
 int main(void){
   char input[21], input_2[21], input_3[15], choice[10], copy[21];
   
@@ -32,7 +67,7 @@ int main(void){
     add_history(choice, historyDb);
     
     if(strcmp(choice, "export") == 0){
-           //Gets which variable the user wants to change and what value
+      //Gets which variable the user wants to change and what value
       scanf("%s", input);
       //adds this user input to the history database
       add_history(input, historyDb);
@@ -58,11 +93,11 @@ int main(void){
 	}
       }
       found = 1;
-	//Updates the env struct
+      //Updates the env struct
       setData(copy, input_3, en_var);
     }
     else if (strcmp(choice, "env") == 0){
-	//Prints all the variables
+      //Prints all the variables
       printEnv(en_var);
     }
     else if (strcmp(choice, "history") == 0){
@@ -81,22 +116,11 @@ int main(void){
 	wait(NULL);
       }
       else{
-	char vars[100];
-	char c;
-        int i = 1;
-	char *args[] = {choice, NULL};
-	/*
-	while (c = getchar()){
-	  if(c == '\n'|| == '\0'){
-	    i++;
-	  }
-	  else{
-	    args[i].append(x)
-	  }
-	  }*/
-        execlp(args[0], (char *)NULL);
+	execProc(historyDb, choice);
 	exit(0);
       }
+      int c;
+      while((c = getchar()) != '\n' && c != EOF);
     }
     
   }
