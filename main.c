@@ -13,7 +13,7 @@
 #include "dataStructures.h"
 #include "history.h"
 
-void execProc(struct Entry *historyDb, char *choice){
+void execProc(struct Entry *historyDb, char *choice) {
   char vars[50];
   int i = 0;
   int ch = getc(stdin);
@@ -24,7 +24,7 @@ void execProc(struct Entry *historyDb, char *choice){
     char *buffer[50];
     //Get the other variables
     scanf("%[^\n]s", vars);
-    char *word = strtok(vars, " "); 
+    char *word = strtok(vars, " ");
     //Puts the variables in a temporary buffer
     while(word!=NULL){
       buffer[i] = word;
@@ -35,8 +35,8 @@ void execProc(struct Entry *historyDb, char *choice){
     char *args[i+2];
     args[0] = choice;
     int a;
-    //Puts strings from old buffer to new array
-    for(a = 1; a <= i; a++){
+    //puts the string from old buffer to new array
+    for (a = 1; a <= i; a++){
       args[a] = buffer[a-1];
     }
     args[a+1] = NULL;
@@ -46,11 +46,55 @@ void execProc(struct Entry *historyDb, char *choice){
     printf("\nstdin is empty\n");
     execvp(args[0], args);
   }
+
+}
+
+//this function will run a chosen executable in the background
+void run_back(struct Entry *historyDb, char *execute) {
+  pid_t pid, pid2;
+
+  //if parent, wait to prevent a zombie process
+  pid = fork();
+  if (pid > 0) {
+    wait(NULL);
+  }
+  else {
+
+    //exit the middle process to create an orphan
+    pid2 = fork();
+    if (pid2 > 0) {
+      exit(0);
+    }
+
+    //run in background
+    else {
+      execProc(historyDb, execute);
+      exit(0);
+    }
+  }
+}
+
+//this function will run a chosen executable in the foreground
+void run_front(struct Entry *historyDb, char *execute) {
+  pid_t pid;
+
+  //if parent, wait to prevent zombie process
+  pid = fork();
+  if (pid > 0) {
+    wait(NULL);
+  }
+
+  //run in foreground
+  else {
+    execProc(historyDb, execute);
+    exit(0);
+  }
 }
 
 int main(void){
-  char input[21], input_2[21], input_3[15], choice[10], copy[21];
-  
+  char input[50], input_2[50], input_3[50], choice[50], copy[50];
+  char *token;
+  int miss = 0;
   int pos, found = 1;
   //This is the struct that holds the env variables
   struct Block en_var[10] = { {"CC", "gcc"}, {"EDITOR", "vim"}, {"HOME", "home"}, {"OLDPWD", "old"}, {"HOST", "host"}, {"PATH", "current"}, {"PWD", "homeDict"}, {"SHELL", "Project"}, {"HISTSIZE", "5"}, {"USER", "user"}};
@@ -59,15 +103,15 @@ int main(void){
   struct Entry historyDb[HISTSIZE];
 
   //Loops until exit or quit is received
-  while ((strcmp(choice, "exit") != 0) || (strcmp(choice, "quit") != 0)){
+  while ((strcmp(choice, "exit\n") != 0) || (strcmp(choice, "quit\n") != 0)){
     printf("%s@%s:%s>> ", en_var[9].value, en_var[4].value, en_var[6].value);
     //Gets the users first choice
-    scanf("%s", choice);
+    fgets(choice, 50, stdin);
     //stores the input to the history struct
     add_history(choice, historyDb);
     
-    if(strcmp(choice, "export") == 0){
-      //Gets which variable the user wants to change and what value
+    if(strcmp(choice, "export\n") == 0){
+           //Gets which variable the user wants to change and what value
       scanf("%s", input);
       //adds this user input to the history database
       add_history(input, historyDb);
@@ -93,37 +137,69 @@ int main(void){
 	}
       }
       found = 1;
-      //Updates the env struct
+	//Updates the env struct
       setData(copy, input_3, en_var);
     }
-    else if (strcmp(choice, "env") == 0){
-      //Prints all the variables
+    else if (strcmp(choice, "env\n") == 0){
+	//Prints all the variables
       printEnv(en_var);
     }
-    else if (strcmp(choice, "history") == 0){
+    else if (strcmp(choice, "history\n") == 0){
       //prints the history of user inputs
       print_history(historyDb);
     }
-    else if(strcmp(choice, "exit") == 0){
+    else if(strcmp(choice, "exit\n") == 0){
       break;
     }
-    else if(strcmp(choice, "quit") == 0){
+    else if(strcmp(choice, "quit\n") == 0){
       break;
     }
-    else{
-      pid_t pid = fork();
-      if(pid>0){
-	wait(NULL);
+
+    //check for the ! to look through the history
+    else if (strstr(choice, "!") != NULL) {
+      token = strtok(choice, "!");
+      
+      //loop backwards through history to get the most recent commands
+      for (int j = HISTSIZE - 1; j >= 0; j--) {
+	if (strcmp(token, historyDb[j].command) == 0) {
+	  
+	  //look for the & to run the executable in the background
+	  if (strstr(token, "&") != NULL) {
+
+	    //run the matching executable in the background
+	    token = strtok(choice, " !&\n");
+	    run_back(historyDb, token);
+	   
+	  }
+	  else {
+	    //run the matching executable in the foreground
+	    token = strtok(choice, " \n!");
+	    run_front(historyDb, token);
+	  }
+	}
+	else {
+	  miss += 1;
+	}
       }
-      else{
-	execProc(historyDb, choice);
-	exit(0);
+      if (miss == HISTSIZE) {
+	printf("Executable not found in recent history\n");
       }
-      int c;
-      while((c = getchar()) != '\n' && c != EOF);
-    }
     
+    }
+
+    //run the executable in the background if it detects &
+    else if (strstr(choice, "./") && strstr(choice, "&")) {
+      strtok(choice, " &\n");
+      run_back(historyDb, token);
+      
+    }
+    //check if the choice is an executable
+    else if (strstr(choice, "./")!= NULL){
+      token = strtok(choice, " \n");
+      run_front(historyDb, token);
+      
+    }
   }
-  
+
   return 0;
 }
