@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include "dataStructures.h"
 #include "history.h"
 
@@ -24,7 +25,47 @@ void execProc(struct Entry *historyDb, char *choice) {
     char *buffer[50];
     //Get the other variables
     scanf("%[^\n]s", vars);
-    char *word = strtok(vars, " ");
+    //Make a copy of vars which will be changed
+    char varscpy[50];
+    strcpy(varscpy, vars);
+    //Get location of redirection
+    char *farrow = strchr(varscpy, '>');
+    char *barrow = strchr(varscpy, '<');
+    int index = 0;
+    int filed;
+    //If replacing output
+    if(farrow != NULL){
+      index = (int)(farrow - varscpy);
+      farrow++;
+      farrow++;
+      vars[index - 1] = '\0';     
+    }
+    //If replacing input
+    else if(barrow != NULL){
+      index = (int)(barrow - varscpy);
+      barrow++;
+      barrow++;
+      vars[index - 1] = '\0';
+    }
+    //Check if we need to redirect
+    if(index != 0){
+      if(farrow != NULL){
+	filed = open(farrow, O_RDWR | O_CREAT, 0664);
+	dup2(filed, 1);
+	dup2(filed, 2);
+      }
+      else{
+	filed = open(barrow, O_RDWR | O_CREAT, 0664);
+	dup2(filed, 0);
+      }
+      close(filed);
+      //Check if there were other variable before
+      if(index == 1){
+	execvp(args[0], args);      
+	return;
+      }
+    }
+    char *word = strtok(vars, " "); 
     //Puts the variables in a temporary buffer
     while(word!=NULL){
       buffer[i] = word;
@@ -35,18 +76,17 @@ void execProc(struct Entry *historyDb, char *choice) {
     char *args[i+2];
     args[0] = choice;
     int a;
-    //puts the string from old buffer to new array
-    for (a = 1; a <= i; a++){
+    //Puts strings from old buffer to new array
+    for(a = 1; a <= i; a++){
       args[a] = buffer[a-1];
     }
     args[a+1] = NULL;
+    
     execvp(args[0], args);
   }
   else{
-    printf("\nstdin is empty\n");
     execvp(args[0], args);
   }
-
 }
 
 //this function will run a chosen executable in the background
