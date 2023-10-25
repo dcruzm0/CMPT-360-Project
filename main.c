@@ -14,6 +14,21 @@
 #include "dataStructures.h"
 #include "history.h"
 
+void makeVars(struct Block * en_var){
+  FILE * fp = fopen("Config.txt", "r");
+  int length = 25;
+  int a = 0;
+  char var[25];
+  if(fp == NULL){
+    exit(EXIT_FAILURE);
+  }
+  while(fgets(var, length, fp)){
+    strcpy(en_var[a].value, var);
+    a++;
+  }
+  return;
+}
+
 void execProc(struct Entry *historyDb, char *choice) {
   char vars[50];
   int i = 0;
@@ -188,7 +203,7 @@ int main(void){
   int pos, found = 1;
   //This is the struct that holds the env variables
   struct Block en_var[10] = { {"CC", "gcc"}, {"EDITOR", "vim"}, {"HOME", "home"}, {"OLDPWD", "old"}, {"HOST", "host"}, {"PATH", "current"}, {"PWD", "homeDict"}, {"SHELL", "Project"}, {"HISTSIZE", "5"}, {"USER", "user"}};
-
+  makeVars(en_var);
   //This is the struct that holds the history of user input. HISTSIZE is defined in the "history.h" file
   struct Entry historyDb[HISTSIZE];
 
