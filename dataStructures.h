@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 struct Block{
-  char key[21];//Unique value in array
-  char value[21];//Not unique value assigned to a key
+  char key[50];//Unique value in array
+  char value[50];//Not unique value assigned to a key
 };
 
 int getData(char *key, struct Block * block);
