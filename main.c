@@ -18,7 +18,7 @@
 #include "history.h"
 
 void makeVars(struct Block * en_var){
-	/*
+	
   FILE * fp = fopen("Config.txt", "r");
   int length = 25;
   int a = 0;
@@ -30,7 +30,7 @@ void makeVars(struct Block * en_var){
     strcpy(en_var[a].value, var);
     a++;
   }
-  return;*/
+  
   struct group * g;
   struct passwd * p;
 	
@@ -41,16 +41,16 @@ void makeVars(struct Block * en_var){
   int gid = p->pw_gid;
   g = getgrgid(gid);
 
-  char cwd[256];
+  char cwd[50];
   getcwd(cwd, sizeof(cwd));
   
 
-  strcpy(en_var[2].value, p->pw_dir);//home
-  strcpy(en_var[4].value, g->gr_name);//host
-  strcpy(en_var[5].value, p->pw_shell);//path
-  strcpy(en_var[6].value, cwd);//pwd
-  strcpy(en_var[7].value, p->pw_shell);//shell
-  strcpy(en_var[9].value, p->pw_name);//user
+  strncpy(en_var[2].value, p->pw_dir, 50);//home
+  strncpy(en_var[4].value, g->gr_name, 50);//host
+  strncpy(en_var[5].value, p->pw_shell, 50);//path
+  strncpy(en_var[6].value, cwd, 50);//pwd
+  strncpy(en_var[7].value, p->pw_shell, 50);//shell
+  strncpy(en_var[9].value, p->pw_name, 50);//user
   
   return;
 	
