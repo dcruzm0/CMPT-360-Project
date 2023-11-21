@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------
- *
- *
+ *Name: Keegan Vanstone, Mark D'Cruz
+ *CMPT 360 shell project
  *
  --------------------------------------------------------------------------*/
 
@@ -52,7 +52,7 @@ void makeVars(struct Block * en_var){
   strncpy(en_var[7].value, p->pw_shell, 50);//shell
   strncpy(en_var[9].value, p->pw_name, 50);//user
   
-  return;
+  //return;
 	
 }
 
@@ -285,6 +285,48 @@ int main(void){
     }
     else if(strcmp(choice, "quit\n") == 0){
       break;
+    }
+
+    //print the current working directory
+    else if (strcmp(choice, "pwd\n") == 0) {
+      printf("%s\n", en_var[6].value);
+    }
+
+    //change the directory if valid
+    else if (strstr(choice, "cd") != NULL) {
+      token = strtok(choice, "\n ");
+      token = strtok(NULL, "\n ");
+      char temp[50];
+      char cwd[50];
+      //store the current working directory in a temporary string
+      strcpy(temp, en_var[6].value);
+
+      //case of wanting to change to home
+      if (strcmp(token, "~") == 0) {
+	if (chdir(en_var[2].value) != 0) {
+	  printf("Error: directory does not exist\n");
+	}
+	//update PWD and OLDPWD accordingly
+	else {
+	  getcwd(cwd, sizeof(cwd));
+	  strcpy(en_var[6].value, cwd);
+	  strcpy(en_var[3].value, temp);
+	}
+      }
+
+      else {
+	//change directory, error if it fails
+	if (chdir(token) != 0) {
+	  printf("Error: directory does not exist\n");
+      
+	}
+	//update the PWD and OLDPWD variables
+	else {
+	  getcwd(cwd, sizeof(cwd));
+	  strcpy(en_var[6].value, cwd);
+	  strcpy(en_var[3].value, temp);
+	}
+      }
     }
 
     //for piping two commands
