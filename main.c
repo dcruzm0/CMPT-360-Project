@@ -56,24 +56,39 @@ void makeVars(struct Block * en_var){
 	
 }
 
-void execProc(struct Entry *historyDb, char *choice) {
+void execProc(struct Entry *historyDb, char *choice, struct Block * en_var) {
   int i = 0;
-  char * vars = malloc(sizeof(choice) * sizeof(char) + 1);
-  strcpy(vars, choice);
+  char * vars = malloc(strlen(choice) + 1);
+  strncpy(vars, choice, strlen(choice));
   strtok(choice, " ");
   char * ch = strtok(NULL, " ");
+  
   choice[strcspn(choice, "\n")] = 0;
+  if(strstr(choice, "./") != NULL){
+    //Checks if we are calling an executable
+    choice++;
+    choice++;
+    
+    //Creating the full path to the executable
+    char * re = malloc(strlen(choice) + strlen(en_var[5].value)+ 1);
+    re[0] = '.';
+    strcat(re, en_var[5].value);
+    re[strlen(en_var[5].value) + 1] = '/';
+    strcat(re, choice);
+    strcpy(choice, re);
+    free(re);    
+  }
   char *args[2] = {choice, NULL};
   vars[strcspn(vars, "\n")] = 0;
-  
   //If the user inputs additional variables
-  if (ch){
+  if (ch){    
+    //Gets the variables
     while(*vars != ' '){
       vars++;      
     }
     vars++;
-      
     char *buffer[50];
+    
     //Get the other variables
     //Make a copy of vars which will be changed
     char varscpy[50];
@@ -91,7 +106,9 @@ void execProc(struct Entry *historyDb, char *choice) {
       farrow++;
       farrow++;
       vars[index] = '\0';
+      
     }
+    
     //If replacing input
     else if(barrow != NULL){
       index = (int)(barrow - varscpy);
@@ -99,6 +116,7 @@ void execProc(struct Entry *historyDb, char *choice) {
       barrow++;
       vars[index] = '\0';
     }
+    
     //Check if we need to redirect
     if(farrow != NULL || barrow != NULL){
       if(farrow != NULL){
@@ -108,36 +126,37 @@ void execProc(struct Entry *historyDb, char *choice) {
       }
       else{
 	filed = open(barrow, O_RDWR | O_CREAT, 0664);
-	dup2(filed, 0);
+	dup2(filed, 0);	
       }
       close(filed);
+      
       //Check if there were other variable before
       if(index == 0){
 	execvp(args[0], args);      
 	return;
-      }
-      
+      }      
     }
     char *word = strtok(vars, " ");
+    
     //Puts the variables in a temporary buffer
     while(word!=NULL){
       buffer[i] = word;
       i++;
       word = strtok(NULL, " ");
     }
-    //Creates the array that will be passed
-    char *args[i+2];
     
+    //Creates the array that will be passed
+    char *args[i+2];    
     args[0] = choice;
     int a;
+    
     //Puts strings from old buffer to new array
     for(a = 1; a <= i; a++){
       args[a] = buffer[a-1];
     }
     for(int b = 0; b < (i+2); b++){
     }
-    args[a+1] = NULL;
-    
+    args[a+1] = NULL;   
     execvp(args[0], args);
   }
   else{
@@ -146,7 +165,7 @@ void execProc(struct Entry *historyDb, char *choice) {
 }
 
 //this function will run a chosen executable in the background
-void run_back(struct Entry *historyDb, char *execute) {
+void run_back(struct Entry *historyDb, char *execute, struct Block * en_var) {
   pid_t pid, pid2;
 
   //if parent, wait to prevent a zombie process
@@ -164,14 +183,14 @@ void run_back(struct Entry *historyDb, char *execute) {
 
     //run in background
     else {
-      execProc(historyDb, execute);
+      execProc(historyDb, execute, en_var);
       exit(0);
     }
   }
 }
 
 //this function will run a chosen executable in the foreground
-void run_front(struct Entry *historyDb, char *execute) {
+void run_front(struct Entry *historyDb, char *execute, struct Block * en_var) {
   pid_t pid;
 
   //if parent, wait to prevent zombie process
@@ -182,7 +201,7 @@ void run_front(struct Entry *historyDb, char *execute) {
 
   //run in foreground
   else {
-    execProc(historyDb, execute);
+    execProc(historyDb, execute, en_var);
     exit(0);
   }
 }
@@ -377,11 +396,11 @@ int main(void){
 
 	    //run in background
 	    token = strtok(choice, " !&\n");
-	    run_back(historyDb, token);
+	    run_back(historyDb, token, en_var);
 	  }
 	  else {
 	    token = strtok(choice, " \n!");
-	    run_front(historyDb, token);
+	    run_front(historyDb, token, en_var);
 	  }
 	}
 	else {
@@ -398,14 +417,14 @@ int main(void){
     else if (strstr(choice, "./") && strstr(choice, "&")){
       
       token = strtok(choice, " &\n");
-      run_back(historyDb, token);
+      run_back(historyDb, token, en_var);
     }
     //check if the choice is an executable
     else if (strstr(choice, "./")!= NULL || (strstr(choice, "./") == NULL)){
       //token = strtok(choice, " ");
       //printf("After: %s\n", token);
       
-      run_front(historyDb, choice);
+      run_front(historyDb, choice, en_var);
     }
   }
 
