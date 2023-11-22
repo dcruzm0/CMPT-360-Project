@@ -57,40 +57,50 @@ void makeVars(struct Block * en_var){
 }
 
 void execProc(struct Entry *historyDb, char *choice) {
-  char vars[50];
   int i = 0;
-  int ch = getc(stdin);
+  char * vars = malloc(sizeof(choice) * sizeof(char) + 1);
+  strcpy(vars, choice);
+  strtok(choice, " ");
+  char * ch = strtok(NULL, " ");
+  choice[strcspn(choice, "\n")] = 0;
   char *args[2] = {choice, NULL};
+  vars[strcspn(vars, "\n")] = 0;
+  
   //If the user inputs additional variables
-  if (ch != '\n'){
-    ungetc(ch, stdin);
+  if (ch){
+    while(*vars != ' '){
+      vars++;      
+    }
+    vars++;
+      
     char *buffer[50];
     //Get the other variables
-    scanf("%[^\n]s", vars);
     //Make a copy of vars which will be changed
     char varscpy[50];
     strcpy(varscpy, vars);
+
     //Get location of redirection
     char *farrow = strchr(varscpy, '>');
     char *barrow = strchr(varscpy, '<');
     int index = 0;
     int filed;
+
     //If replacing output
     if(farrow != NULL){
       index = (int)(farrow - varscpy);
       farrow++;
       farrow++;
-      vars[index - 1] = '\0';     
+      vars[index] = '\0';
     }
     //If replacing input
     else if(barrow != NULL){
       index = (int)(barrow - varscpy);
       barrow++;
       barrow++;
-      vars[index - 1] = '\0';
+      vars[index] = '\0';
     }
     //Check if we need to redirect
-    if(index != 0){
+    if(farrow != NULL || barrow != NULL){
       if(farrow != NULL){
 	filed = open(farrow, O_RDWR | O_CREAT, 0664);
 	dup2(filed, 1);
@@ -102,12 +112,13 @@ void execProc(struct Entry *historyDb, char *choice) {
       }
       close(filed);
       //Check if there were other variable before
-      if(index == 1){
+      if(index == 0){
 	execvp(args[0], args);      
 	return;
       }
+      
     }
-    char *word = strtok(vars, " "); 
+    char *word = strtok(vars, " ");
     //Puts the variables in a temporary buffer
     while(word!=NULL){
       buffer[i] = word;
@@ -116,11 +127,14 @@ void execProc(struct Entry *historyDb, char *choice) {
     }
     //Creates the array that will be passed
     char *args[i+2];
+    
     args[0] = choice;
     int a;
     //Puts strings from old buffer to new array
     for(a = 1; a <= i; a++){
       args[a] = buffer[a-1];
+    }
+    for(int b = 0; b < (i+2); b++){
     }
     args[a+1] = NULL;
     
@@ -388,9 +402,10 @@ int main(void){
     }
     //check if the choice is an executable
     else if (strstr(choice, "./")!= NULL || (strstr(choice, "./") == NULL)){
+      //token = strtok(choice, " ");
+      //printf("After: %s\n", token);
       
-      token = strtok(choice, " \n");
-      run_front(historyDb, token);
+      run_front(historyDb, choice);
     }
   }
 
