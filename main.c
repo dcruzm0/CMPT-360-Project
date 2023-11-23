@@ -317,12 +317,12 @@ int main(void){
     }
     else if(strcmp(choice, "exit\n") == 0){
       //free the globbuf struct since it is in dynamic storage
-      globfree(globbuf);
+      //globfree(&globbuf);
       break;
     }
     else if(strcmp(choice, "quit\n") == 0){
       //free the globbuf struct since it is in dynamic storage
-      globfree(globbuf);
+      //globfree(&globbuf);
       break;
     }
 
@@ -342,7 +342,7 @@ int main(void){
 	  found++;
 	}
       }
-
+      globfree(&globbuf);
       
     }
     //print the current working directory
