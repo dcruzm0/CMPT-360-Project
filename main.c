@@ -4,6 +4,7 @@
  *
  --------------------------------------------------------------------------*/
 
+#include <glob.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -261,6 +262,7 @@ int main(void){
   char *token;
   int miss = 0;
   int pos, found = 1;
+  glob_t globbuf;
   //This is the struct that holds the env variables
   struct Block en_var[10] = { {"CC", "gcc"}, {"EDITOR", "vim"}, {"HOME", "home"}, {"OLDPWD", "old"}, {"HOST", "host"}, {"PATH", "current"}, {"PWD", "homeDict"}, {"SHELL", "Project"}, {"HISTSIZE", "5"}, {"USER", "user"}};
   makeVars(en_var);
@@ -314,12 +316,35 @@ int main(void){
       print_history(historyDb);
     }
     else if(strcmp(choice, "exit\n") == 0){
+      //free the globbuf struct since it is in dynamic storage
+      globfree(globbuf);
       break;
     }
     else if(strcmp(choice, "quit\n") == 0){
+      //free the globbuf struct since it is in dynamic storage
+      globfree(globbuf);
       break;
     }
 
+    //globs functionality, this assumes that the command ls is used in conjunction
+    else if ((strstr(choice, "*") != NULL) || (strstr(choice, "?") != NULL) || (strstr(choice, "[") != NULL)) {
+      char **found;
+      token = strtok(choice, "ls -1\n");
+
+      if (glob(token, GLOB_ERR, NULL, &globbuf) != 0){
+	printf("Error: coiuld not find matches\n");
+      }
+      else {
+	found = globbuf.gl_pathv;
+
+	while (*found != NULL) {
+	  printf("%s\n", *found);
+	  found++;
+	}
+      }
+
+      
+    }
     //print the current working directory
     else if (strcmp(choice, "pwd\n") == 0) {
       printf("%s\n", en_var[6].value);
